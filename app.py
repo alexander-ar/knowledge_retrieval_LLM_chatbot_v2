@@ -150,7 +150,7 @@ def main(input_text_file):
     
 
     while True:
-        new_user_question = input("Please ask your question about the document. If you want to stop type 'exit'.")
+        new_user_question = input("Please ask your question about the document. If you want to stop type 'exit'.\n")
         if new_user_question.lower() == "exit":
             print("You ended the program.  Goodbye!")
             break
@@ -158,7 +158,7 @@ def main(input_text_file):
             response = answer_question(q = new_user_question, chain = crc)
             print(f"Answering question: {new_user_question}")
             # print the response
-            print(f"Answer to question {question_counter}: \n")
+            print(f"Here is the response: \n")
             print(response, "\n")
     
     # process the input_question_file line by line
