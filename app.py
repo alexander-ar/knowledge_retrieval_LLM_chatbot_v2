@@ -9,8 +9,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
-from langchain.document_loaders import PyPDFLoader#####################
-from langchain.document_loaders import Docx2txtLoader##################
+from langchain_community.document_loaders import PyPDFLoader#####################
+from langchain_community.document_loaders import Docx2txtLoader##################
 from docx import Document################
 import PyPDF2########################
 import textract######################
@@ -134,11 +134,11 @@ def main(input_text_file):
         printed output with the GPT answer to each question
     '''
     # process input file
-    processed_text_file_path = process_input_text(input_text_file)
+    processed_text_file_path = process_input_file(input_text_file)
     
     # loader = TextLoader(processed_text_file_path, encoding = 'UTF-8') # need encoding specified
     # data = loader.load() 
-    data = load
+    data = load_document(processed_text_file_path)
     
     # split the text using RecursiveCharacterTextSplitter
     text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1024, chunk_overlap = 80)
