@@ -9,9 +9,15 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
+from langchain.document_loaders import PyPDFLoader#####################
+from langchain.document_loaders import Docx2txtLoader##################
+from docx import Document################
+import PyPDF2########################
+import textract######################
 import os
 import argparse
 import tempfile
+
 
 # fetch environmental variables
 load_dotenv()
@@ -72,6 +78,34 @@ def answer_question(q, chain):
     return result['answer']
 
 
+# loading PDF, DOCX and TXT files as LangChain Documents
+def load_document(file):
+    '''
+    load_documents() is a helper function to load pdf, docx or txtx files
+    as langchain documents
+    
+    Parameters:
+        file (str): path to file
+    '''
+    name, extension = os.path.splitext(file)
+
+    if extension == '.pdf':
+        print(f'Loading {file}')
+        loader = PyPDFLoader(file)
+    elif extension == '.docx':
+        print(f'Loading {file}')
+        loader = Docx2txtLoader(file)
+    elif extension == '.txt':
+        loader = TextLoader(file, encoding = 'UTF-8')
+    else:
+        print('This content document format is not supported!')
+        return None
+
+    data = loader.load()
+    return data
+
+
+
 # main app function
 def main(input_text_file):
     '''
@@ -88,8 +122,9 @@ def main(input_text_file):
     # process input file
     processed_text_file_path = process_input_text(input_text_file)
     
-    loader = TextLoader(processed_text_file_path, encoding = 'UTF-8') # need encoding specified
-    data = loader.load() 
+    # loader = TextLoader(processed_text_file_path, encoding = 'UTF-8') # need encoding specified
+    # data = loader.load() 
+    data = load
     
     # split the text using RecursiveCharacterTextSplitter
     text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1024, chunk_overlap = 80)

@@ -5,3 +5,6 @@ langchain
 langchain_openai
 langchain-community
 chromadb
+PyPDF2
+docx
+textract
