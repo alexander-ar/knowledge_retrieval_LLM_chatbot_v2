@@ -1,0 +1,7 @@
+openai
+python-dotenv
+argparse
+langchain
+langchain_openai
+langchain-community
+chromadb
