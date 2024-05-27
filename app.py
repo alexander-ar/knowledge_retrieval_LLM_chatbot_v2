@@ -23,10 +23,10 @@ import tempfile
 load_dotenv()
 
 # helper function to process the input text file, remove empty lines and unneeded formatting marks
-def process_input_text(input_file_path):
+def process_input_file(input_file_path):
     '''
-    process_input_text() helper function takes the text file as an argument and
-    removes empty lines and non-essential characters. The output is saved
+    process_input_text() helper function takes the input file in txt, docx or pdf format
+    as an argument and removes empty lines and non-essential characters. The output is saved
     in a temporary directory.
     
     Parameters:
@@ -35,30 +35,44 @@ def process_input_text(input_file_path):
     Returns:
         processed temporary text file path saved in temp/
     '''
-    
-    # create a temporary file in the same directory as input file
+    # Create a temporary file in the same directory as the input file
     temp_dir = os.path.join(os.path.dirname(input_file_path), "temp")
     os.makedirs(temp_dir, exist_ok = True)
-    
-    temp_file = tempfile.NamedTemporaryFile(mode = 'w', delete = False, dir = temp_dir, encoding = 'UTF-8')
-    
-    try:
-        # Read the contents of the file
-        with open(input_file_path, 'r', encoding = 'UTF-8') as input_file:
-            lines = input_file.readlines()
 
-        # Remove empty lines
+    temp_file = tempfile.NamedTemporaryFile(mode = 'w', delete = False, dir = temp_dir, encoding = 'UTF-8')
+
+    try:
+        file_extension = os.path.splitext(input_file_path)[1].lower()
+
+        # Read the contents of the file based on its type
+        if file_extension == '.txt':
+            with open(input_file_path, 'r', encoding='UTF-8') as input_file:
+                lines = input_file.readlines()
+        elif file_extension == '.docx':
+            doc = Document(input_file_path)
+            lines = [p.text for p in doc.paragraphs]
+        elif file_extension == '.pdf':
+            with open(input_file_path, 'rb') as input_file:
+                reader = PyPDF2.PdfFileReader(input_file)
+                lines = []
+                for page_num in range(reader.numPages):
+                    page = reader.getPage(page_num)
+                    lines.append(page.extract_text())
+        else:
+            raise ValueError("Unsupported file format")
+
+        # Remove empty lines and lines consisting only of '-' or '_'
         non_empty_lines = [line.strip() for line in lines if line.strip() and not all(char in {'-', '_'} for char in line.strip())]
 
-        # write processed text to the temporary file
+        # Write processed text to the temporary file
         temp_file.write('\n'.join(non_empty_lines))
     finally:
-        # close the temporary file
+        # Close the temporary file
         temp_file.close()
-        
-    # get the path of the temporary file
+
+    # Get the path of the temporary file
     temp_file_path = temp_file.name
-    
+
     return temp_file_path
 
 
