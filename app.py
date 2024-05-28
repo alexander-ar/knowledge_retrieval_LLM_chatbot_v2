@@ -9,11 +9,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
-from langchain_community.document_loaders import PyPDFLoader#####################
-from langchain_community.document_loaders import Docx2txtLoader##################
-from docx import Document################
-import PyPDF2########################
-import textract######################
+from docx import Document
+import PyPDF2
 import os
 import argparse
 import tempfile
@@ -59,7 +56,7 @@ def process_input_file(input_file_path):
                     page = reader.getPage(page_num)
                     lines.append(page.extract_text())
         else:
-            raise ValueError("Unsupported file format")
+            raise ValueError("Unsupported file format: " + file_extension)
 
         # Remove empty lines and lines consisting only of '-' or '_'
         non_empty_lines = [line.strip() for line in lines if line.strip() and not all(char in {'-', '_'} for char in line.strip())]
@@ -95,33 +92,24 @@ def answer_question(q, chain):
 # loading PDF, DOCX and TXT files as LangChain Documents
 def load_document(file):
     '''
-    load_documents() is a helper function to load pdf, docx or txtx files
+    load_documents() is a helper function to load txt file
     as langchain documents
     
     Parameters:
         file (str): path to file
     '''
-    name, extension = os.path.splitext(file)
-
-    if extension == '.pdf':
-        print(f'Loading {file}')
-        loader = PyPDFLoader(file)
-    elif extension == '.docx':
-        print(f'Loading {file}')
-        loader = Docx2txtLoader(file)
-    elif extension == '.txt':
+    try:
         loader = TextLoader(file, encoding = 'UTF-8')
-    else:
-        print('This content document format is not supported!')
-        return None
-
+    except:
+        print("TextLoader failed to load the text from load_documents function")
+    
     data = loader.load()
     return data
 
 
 
 # main app function
-def main(input_text_file):
+def main(input_text_file, remove_temp_file = True):
     '''
     main() function takes the text file with content and allows the user
     to ask questions through command line, then prints out the answer to each 
@@ -129,6 +117,8 @@ def main(input_text_file):
     
     Parameters:
         input_text_file (str): path to the input text file with content
+        remove_temp_file (bool): if True temporary file with processed content
+            is deleted from temp directory
     
     Returns:
         printed output with the GPT answer to each question
@@ -136,9 +126,9 @@ def main(input_text_file):
     # process input file
     processed_text_file_path = process_input_file(input_text_file)
     
-    # loader = TextLoader(processed_text_file_path, encoding = 'UTF-8') # need encoding specified
-    # data = loader.load() 
     data = load_document(processed_text_file_path)
+    if data is None:
+        print(f"Failed to load document: {processed_text_file_path}")
     
     # split the text using RecursiveCharacterTextSplitter
     text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1024, chunk_overlap = 80)
@@ -202,6 +192,9 @@ def main(input_text_file):
         new_user_question = input("Please ask your question about the document. If you want to stop type 'exit'.\n")
         if new_user_question.lower() == "exit":
             print("You ended the program.  Goodbye!")
+            # removing temporary file with processed data if remove_temp_file==True
+            if remove_temp_file:
+                os.remove(processed_text_file_path)
             break
         else:
             response = answer_question(q = new_user_question, chain = crc)
