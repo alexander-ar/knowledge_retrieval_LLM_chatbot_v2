@@ -134,7 +134,7 @@ def main(input_text_file, remove_temp_file = True):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1024, chunk_overlap = 80)
     chunks = text_splitter.split_documents(data)
     
-    # Instantiate an embedding model from AzureOpenAI
+    # Instantiate an embedding model from OpenAI
     embeddings = OpenAIEmbeddings(
         model='text-embedding-3-small', 
         dimensions=1536)  
